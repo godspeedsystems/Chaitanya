@@ -4,3 +4,5 @@ docs:
   endpoint: /api-docs
 cors:
   origin: "*"
+fileUpload:
+  multiples: true

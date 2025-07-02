@@ -207,56 +207,58 @@ async function ingestChangedFiles(repoUrl: string, branch = 'main'): Promise<voi
     logger.info('Ingestion complete.');
 }
 
-async function ingestUploadedFile(file: Buffer, filename: string, docUniqueId: string): Promise<string> {
-  
-    const ext = path.extname(filename).toLowerCase();
-    const buffer = file;
+async function ingestUploadedFile(
+  file: Buffer,
+  filename: string,
+  docUniqueId: string,
+  vs: VectorStore
+): Promise<string> {
+  const ext = path.extname(filename).toLowerCase();
+  const buffer = file;
 
-    let content = "";
+  let content = "";
 
-  
-    switch (ext) {
-        case ".pdf":
-          const pdf = await extractTextFromPdf(buffer);
-          content = pdf;
-          break;
-  
-        case ".docx":
-          const result = await mammoth.extractRawText({ buffer });
-          content = result.value;
-          break;
-  
-        case ".txt":
-        case ".md":
-          content = buffer.toString("utf-8");
-          break;
-  
-        case ".html":
-          const root = htmlParse(buffer.toString("utf-8"));
-          content = root.text;
-          break;
-  
-        default:
-          return `Unsupported file type: ${ext}`
-      }
+  switch (ext) {
+    case ".pdf":
+      const pdf = await extractTextFromPdf(buffer);
+      content = pdf;
+      break;
 
-    const vs = new VectorStore();
-    const fname = path.basename(filename, path.extname(filename));
-    const docId = docUniqueId;
-    logger.info(`[${fname} with docID ${docId}] Starting ingestion.`);
+    case ".docx":
+      const result = await mammoth.extractRawText({ buffer });
+      content = result.value;
+      break;
 
-    // Step 1: Split by pages or sections
-    const pages = content.split(/\n{2,}/).filter(p => p.trim().length > 0);
-    logger.info(`[${fname} with docID ${docId}] ${pages.length} logical pages found.`);
+    case ".txt":
+    case ".md":
+      content = buffer.toString("utf-8");
+      break;
 
-    // Step 2: Process each page
-    for (let i = 0; i < pages.length; i++) {
-        const pageContent = pages[i];
-        const pageId = `${docId}_page_${i + 1}`;
-        vs.upsertDoc(pageId,pageContent);
-    }
-    return `Document '${filename}' ingested successfully.`
-         
+    case ".html":
+      const root = htmlParse(buffer.toString("utf-8"));
+      content = root.text;
+      break;
+
+    default:
+      return `Unsupported file type: ${ext}`;
+  }
+
+  const fname = path.basename(filename, path.extname(filename));
+  const docId = docUniqueId;
+  logger.info(`[${fname} with docID ${docId}] Starting ingestion.`);
+
+  // Step 1: Split by pages or sections
+  const pages = content.split(/\n{2,}/).filter((p) => p.trim().length > 0);
+  logger.info(`[${fname} with docID ${docId}] ${pages.length} logical pages found.`);
+
+  // Step 2: Process each page
+  for (let i = 0; i < pages.length; i++) {
+    const pageContent = pages[i];
+    const pageId = `${docId}_page_${i + 1}`;
+    await vs.upsertDoc(pageId, pageContent);
+  }
+  logger.info(`Document '${filename}' ingested successfully.`);
+  return `Document '${filename}' ingested successfully.`;
 }
 
 export { ingestChangedFiles, loadRepoUrl, ingestUploadedFile}
