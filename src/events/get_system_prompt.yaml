@@ -1,0 +1,13 @@
+http.get./system-prompt:
+  fn: get_system_prompt
+  responses:
+    200:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              core_system_prompt:
+                type: string
+              tool_knowledge_prompt:
+                type: string

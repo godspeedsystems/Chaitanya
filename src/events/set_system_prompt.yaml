@@ -1,0 +1,21 @@
+http.post./system-prompt:
+  fn: set_system_prompt
+  body:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            core_system_prompt:
+              type: string
+            tool_knowledge_prompt:
+              type: string
+  responses:
+    200:
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string

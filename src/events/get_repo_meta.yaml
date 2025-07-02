@@ -1,0 +1,35 @@
+"http.get./meta/repo":
+  fn: get_repo_meta
+  summary: Returns metadata of uploaded files
+  description: Reads and returns the contents of `uploadsMetadata.json` as structured metadata
+  responses:
+    200:
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: object
+              properties:
+                repoUrl:
+                  type: string
+                branch: 
+                  type: string
+    400:
+      description: Error reading upload metadata file
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+              code:
+                type: integer
+              message:
+                type: string
+              data:
+                type: object
+                properties:
+                  error:
+                    type: object

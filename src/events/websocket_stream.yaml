@@ -1,0 +1,18 @@
+websocket.stream:
+  fn: stream_gemini
+  schema:
+    type: object
+    required:
+      - eventtype
+      - payload
+    properties:
+      eventtype:
+        type: string
+      payload:
+        type: object
+        required:
+           - message
+        properties:
+          message:
+            type: string
+

@@ -1,0 +1,33 @@
+"http.delete./doc/:id":
+  fn: delete_doc_file
+  summary: Delete a file from vector store and metadata
+  description: Removes a document from vector storage and deletes its metadata entry by file name
+  params:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    200:
+      description: Successfully deleted file
+      content:
+        application/json            
+    400:
+      description: Error deleting file or metadata
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+              code:
+                type: integer
+              message:
+                type: string
+              data:
+                type: object
+                properties:
+                  error:
+                    type: object

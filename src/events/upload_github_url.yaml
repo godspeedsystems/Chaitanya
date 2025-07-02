@@ -1,0 +1,35 @@
+http.post./upload_github:
+  fn: ingest_github
+  body:
+    content:
+      application/json:
+        schema:
+          type: object
+          properties:
+            id:
+              type: string
+            github_url:
+              type: string
+            branch:
+              type: string
+  responses:
+    200:
+      description: Uploaded file successfully. 
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    400:
+      description: Invalid file
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+
+  

@@ -1,0 +1,32 @@
+http.post./upload_docs:
+  fn: upload_docs_fn
+  body:
+    content:
+      multipart/form-data:
+        schema:
+          type: object
+          properties:
+            file:
+              type: string
+              format: binary
+  responses:
+    200:
+      description: Uploaded file successfully. 
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              docUniqueId:
+                type: string
+    400:
+      description: Invalid file
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
