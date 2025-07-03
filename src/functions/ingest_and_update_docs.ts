@@ -50,7 +50,7 @@ export default async function (ctx: GSContext): Promise<GSStatus> {
   }
 
   for (const element of repos) {
-    const repoUrl = element?.githuburl || element?.repo_url; // fallback for field naming
+    const repoUrl = element?.githuburl || element?.repoUrl; // fallback for field naming
     const branch = element?.branch || 'main';
 
     if (!repoUrl) {

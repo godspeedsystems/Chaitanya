@@ -7,7 +7,7 @@ import { tool } from "@langchain/core/tools";
 import { z } from "zod";
 import { BaseMessage } from "@langchain/core/messages";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
-import { tool_knowledge_prompt, core_system_prompt } from '../helper/prompts';
+import { getPrompts } from '../helper/prompts';
 import { memorySaver } from '../helper/memory';
 
 const seenThreads = new Set<string>();
@@ -84,7 +84,8 @@ export default async function stream_gemini(ctx: GSContext): Promise<GSStatus> {
   graph.addConditionalEdges("agent", shouldRetrieve);
   graph.addEdge('tools', 'agent');
  
-  const systemPromot = Array(core_system_prompt,tool_knowledge_prompt).join('/n')
+  const { core_system_prompt, tool_knowledge_prompt } = getPrompts();
+  const systemPromot = Array(core_system_prompt, tool_knowledge_prompt).join('\n');
 
   const runnable = graph.compile({
     checkpointer: memorySaver
@@ -102,28 +103,66 @@ export default async function stream_gemini(ctx: GSContext): Promise<GSStatus> {
 
   try {
   let streamStarted = false;
-
   await runnable.stream(
     { messages },
     {
-    configurable: {
-      thread_id: threadId
-    },
+      configurable: {
+        thread_id: threadId,
+      },
       callbacks: [
         {
-          handleLLMNewToken: async (token, runId, parentRunId, tags, metadata) => {
+          handleToolStart: async (tool, input) => {
+            ws.send(
+                JSON.stringify({
+                  eventtype: "stream.start",
+                  payload: { message: "[STREAM_START]" },
+                })
+              );
+            ws.send(
+              JSON.stringify({
+                eventtype: "stream.chunk",
+                payload: { message: "Please wait...Retreving relevant documents." },
+              })
+            );
+            ws.send(
+              JSON.stringify({
+                eventtype: "stream.end",
+                payload: { message: "[STREAM_END]" },
+              })
+            );
+          },
+          handleLLMStart: async () => {
             if (!streamStarted) {
               streamStarted = true;
-              ws.send(JSON.stringify({ eventtype: 'stream.start', payload: { message: '[STREAM_START]' } }));
+              ws.send(
+                JSON.stringify({
+                  eventtype: "stream.start",
+                  payload: { message: "[STREAM_START]" },
+                })
+              );
             }
-            ws.send(JSON.stringify({ eventtype: 'stream.chunk', payload: { message : token.length > 0 ? token : "Please wait...Retreving relevant documents."  } }));
+          },
+          handleLLMNewToken: async (token) => {
+            if (token.length > 0) {
+              ws.send(
+                JSON.stringify({
+                  eventtype: "stream.chunk",
+                  payload: { message: token },
+                })
+              );
+            }
           },
           handleLLMEnd: async () => {
-            ws.send(JSON.stringify({ eventtype: 'stream.end', payload: { message: '[STREAM_END]' } }));
+            ws.send(
+              JSON.stringify({
+                eventtype: "stream.end",
+                payload: { message: "[STREAM_END]" },
+              })
+            );
             streamStarted = false;
-          }
-        }
-      ]
+          },
+        },
+      ],
     }
   );
 
