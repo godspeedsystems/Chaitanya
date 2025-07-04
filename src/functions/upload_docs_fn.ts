@@ -52,10 +52,23 @@ export function deleteFileMetadata(fileId: string):void {
   }
 }
 
-export default async function(ctx: GSContext): Promise<GSStatus> {
+export default async function (ctx: GSContext): Promise<GSStatus> {
   const { files } = ctx.inputs.data.files;
+  const { metadata } = ctx.inputs.data.body;
 
- const fileArray = Array.isArray(files) ? files : [files];
+  const fileArray = Array.isArray(files) ? files : [files];
+  const metadataArray = (Array.isArray(metadata) ? metadata : (metadata ? [metadata] : [])).map(m => {
+    if (typeof m === 'string') {
+      try {
+        return JSON.parse(m);
+      } catch (e) {
+        logger.error('Failed to parse metadata item:', m, e);
+        return {}; // Return empty object if parsing fails
+      }
+    }
+    return m || {};
+  });
+
 
   try {
     if (!fileArray.length || !fileArray[0] || !fileArray[0].data) {
@@ -78,11 +91,12 @@ export default async function(ctx: GSContext): Promise<GSStatus> {
     const results = [];
     const newMetadataEntries = [];
 
-    for (const uploadedFile of fileArray) {
+    for (const [index, uploadedFile] of fileArray.entries()) {
       if (!uploadedFile || !uploadedFile.data) {
         ctx.logger.warn("Skipping an invalid file entry in the uploaded list.");
         continue;
       }
+      const userMetadata = metadataArray[index] || {};
 
       const filepath = uploadedFile.tempFilePath;
       const parsed = path.parse(filepath);
@@ -93,6 +107,7 @@ export default async function(ctx: GSContext): Promise<GSStatus> {
       const fileName = uploadedFile.name ?? "unknown.bin";
 
       newMetadataEntries.push({
+        ...userMetadata,
         fileName,
         fileSize: fileBuffer.length,
         uniqueID: docUniqueId,
@@ -100,7 +115,7 @@ export default async function(ctx: GSContext): Promise<GSStatus> {
       });
 
       const res = await ingestUploadedFile(fileBuffer, fileName, docUniqueId, vs);
-      
+
       results.push({
         message: res,
         docUniqueId: docUniqueId,

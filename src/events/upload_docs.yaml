@@ -11,6 +11,10 @@ http.post./upload_docs:
               items:
                 type: string
                 format: binary
+            metadata:
+              type: array
+              items:
+                type: object
   responses:
     200:
       description: Uploaded file successfully. 
