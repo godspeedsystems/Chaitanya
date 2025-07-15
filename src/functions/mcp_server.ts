@@ -1,9 +1,8 @@
 import { GSContext, GSStatus, PlainObject } from '@godspeedsystems/core';
-import { RAGPipeline } from "../helper/mcpRag";
-
+import { RAGPipeline } from '../helper/mcpRag';
 
 export default async function handleQuery(ctx: GSContext, args: PlainObject) {
-  const query =  ctx.inputs?.data?.body?.body?.query;
+  const query = ctx.inputs?.data?.body?.body?.query;
 
   if (!query || typeof query !== 'string') {
     return new GSStatus(false, 400, 'Invalid query');

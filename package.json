@@ -37,7 +37,8 @@
 		"clean:default": "rm -rf dist",
 		"prisma-db-push": "for i in src/datasources/*.prisma; do npx --yes prisma db push --schema $i; done;",
 		"prisma-generate": "for i in src/datasources/*.prisma; do npx --yes prisma generate --schema $i; done;",
-		"serve": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\" && nodemon --watch src --watch config --watch mappings -e ts,js,yaml,json,.env --exec \"npm run build && npm run preview\""
+		"serve": "node -e \"require('fs').rmSync('dist', { recursive: true, force: true })\" && nodemon --watch src --watch config --watch mappings -e ts,js,yaml,json,.env --exec \"npm run build && npm run preview\"",
+		"format": "prettier --write \"src/**/*.ts\""
 	},
 	"dependencies": {
 		"@godspeedsystems/core": "^2.5.4",
@@ -76,6 +77,7 @@
 		"pdf-parse": "^1.1.1",
 		"pino-pretty": "^13.0.0",
 		"pnpm": "^10.12.1",
+		"prettier": "^3.6.2",
 		"prisma": "^6.8.2",
 		"redis": "^5.5.6",
 		"run-script-os": "^1.1.6",

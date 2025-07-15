@@ -1,6 +1,6 @@
-import { GSContext, GSStatus } from "@godspeedsystems/core";
-import fs from "fs";
-import path from "path";
+import { GSContext, GSStatus } from '@godspeedsystems/core';
+import { promises as fs } from 'fs';
+import path from 'path';
 
 export default async function (ctx: GSContext): Promise<GSStatus> {
   const {
@@ -16,7 +16,9 @@ export default async function (ctx: GSContext): Promise<GSStatus> {
     core_system_prompt,
     tool_knowledge_prompt,
   };
-  fs.writeFileSync(filePath, JSON.stringify(prompts, null, 2));
+  await fs.writeFile(filePath, JSON.stringify(prompts, null, 2));
 
-  return new GSStatus(true, 200, undefined,{message: "System prompts updated successfully."});
+  return new GSStatus(true, 200, undefined, {
+    message: 'System prompts updated successfully.',
+  });
 }

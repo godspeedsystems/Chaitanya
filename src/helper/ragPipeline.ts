@@ -2,29 +2,32 @@ import { VectorStore } from './vectorStore';
 import OpenAI from 'openai';
 
 export class CompleteRAGPipeline {
-    private vs: VectorStore;
-    constructor() {
-        this.vs = new VectorStore();
-    }
-    async run(query: string, k: number = 5): Promise<{ answer: string; source_files: string[] }> {
-        const docs = await this.vs.search(query, k);
-        const unique_docs = Array.from(new Set(docs.map((doc) => `${doc.content}`)));
-        const context = unique_docs.join('\n');
-        const sourceFiles = Array.from(new Set(docs.map((doc) => doc.docId)));
+  private vs: VectorStore;
+  constructor() {
+    this.vs = new VectorStore();
+  }
+  async run(
+    query: string,
+    k: number = 5,
+  ): Promise<{ answer: string; source_files: string[] }> {
+    const docs = await this.vs.search(query, k);
+    const unique_docs = Array.from(
+      new Set(docs.map((doc) => `${doc.content}`)),
+    );
+    const context = unique_docs.join('\n');
+    const sourceFiles = Array.from(new Set(docs.map((doc) => doc.docId)));
 
+    const openai = new OpenAI({
+      apiKey: process.env.OPENROUTER_API_KEY,
+      baseURL: 'https://openrouter.ai/api/v1',
+    });
 
-        const openai = new OpenAI({
-            apiKey: process.env.OPENROUTER_API_KEY,
-            baseURL: 'https://openrouter.ai/api/v1',
-          });
-
-
-        const response = await openai.chat.completions.create({
-                                       model: process.env.MODEL_NAME!, 
-                                       messages: [
-                                                     {
-                                                      role: 'system',
-                                                      content: "      \
+    const response = await openai.chat.completions.create({
+      model: process.env.MODEL_NAME!,
+      messages: [
+        {
+          role: 'system',
+          content: '      \
                                                                 You are a helpful assistant who understands the Godspeed Framework deeply. Always aim to provide technically sound, creative, and helpful answers to a wide range of user questions, using the documentation provided as context. \
                                                                  \
                                                                 **Rules:**\
@@ -50,20 +53,21 @@ export class CompleteRAGPipeline {
    - Always use inline LaTeX: wrap expressions like this — $a^2 + b^2 = c^2$.\
    - Use $$ for display math on its own line, and always close math blocks properly.\
 \
-Your tone should be friendly but focused. If the user asks something unrelated to the documentation or framework, explain clearly that you are focused on helping with Godspeed-related tasks.".trim()
-      },
-      {
-        role: 'user',
-        content: `Context:\n${context}\n\nQuestion: ${query}\nAnswer:`
-      }
-    ]
-});
-        
-        const answer = response.choices?.[0]?.message?.content?.trim() || 'No response.';
+Your tone should be friendly but focused. If the user asks something unrelated to the documentation or framework, explain clearly that you are focused on helping with Godspeed-related tasks.'.trim(),
+        },
+        {
+          role: 'user',
+          content: `Context:\n${context}\n\nQuestion: ${query}\nAnswer:`,
+        },
+      ],
+    });
 
-        return {
-            answer: answer,
-            source_files: sourceFiles
-        }
-    }
+    const answer =
+      response.choices?.[0]?.message?.content?.trim() || 'No response.';
+
+    return {
+      answer: answer,
+      source_files: sourceFiles,
+    };
+  }
 }

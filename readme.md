@@ -193,7 +193,7 @@ Included in this repository is a sophisticated, ready-to-use web client to inter
     ```bash
     npm run dev
     ```
-    The application will be available at `http://localhost:5173`.
+    The application will be available at `http://localhost:8080`.
 ## API Reference
 
 RAG-Node provides a simple yet powerful REST API to manage your knowledge base and interact with the RAG pipeline.

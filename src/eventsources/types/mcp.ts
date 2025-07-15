@@ -12,7 +12,6 @@ import {
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { z, ZodRawShape } from 'zod';
 
-
 export default class EventSource extends GSEventSource {
   private server!: McpServer;
   private transport = new StdioServerTransport();
@@ -37,8 +36,7 @@ export default class EventSource extends GSEventSource {
   ): Promise<void> {
     const server = this.client as McpServer;
     if (!server) throw new Error('MCP server not initialized');
-    
-    
+
     const paramDefs = eventConfig.params || [];
     const bodyDef = eventConfig.body;
     const zodShape: ZodRawShape = {};
@@ -46,43 +44,69 @@ export default class EventSource extends GSEventSource {
 
     // Build param schema (query/path/header)
     for (const def of paramDefs) {
-       if (typeof def !== 'object' || !def.name || !def.schema) continue;
-       const name = def.name;
-       const type = def.schema?.type || 'any';
-       let zodType: z.ZodTypeAny;
+      if (typeof def !== 'object' || !def.name || !def.schema) continue;
+      const name = def.name;
+      const type = def.schema?.type || 'any';
+      let zodType: z.ZodTypeAny;
 
-       switch (type) {
-         case 'string': zodType = z.string(); break;
-         case 'number': zodType = z.number(); break;
-         case 'boolean': zodType = z.boolean(); break;
-         case 'object': zodType = z.record(z.any()); break;
-         case 'array': zodType = z.array(z.any()); break;
-         case 'date': zodType = z.coerce.date(); break;
-         default: zodType = z.any();
-       }
+      switch (type) {
+        case 'string':
+          zodType = z.string();
+          break;
+        case 'number':
+          zodType = z.number();
+          break;
+        case 'boolean':
+          zodType = z.boolean();
+          break;
+        case 'object':
+          zodType = z.record(z.any());
+          break;
+        case 'array':
+          zodType = z.array(z.any());
+          break;
+        case 'date':
+          zodType = z.coerce.date();
+          break;
+        default:
+          zodType = z.any();
+      }
 
-       zodShape[name] = def.required ? zodType : zodType.optional();
+      zodShape[name] = def.required ? zodType : zodType.optional();
     }
 
     // Build body schema (nested under .body)
     if (bodyDef?.type === 'object' && bodyDef.properties) {
-       const bodyShape: ZodRawShape = {};
-       for (const [key, val] of Object.entries(bodyDef.properties)) {
-          const type = (val as any).type || 'any';
-          let zodType: z.ZodTypeAny;
-          switch (type) {
-             case 'string': zodType = z.string(); break;
-             case 'number': zodType = z.number(); break;
-             case 'boolean': zodType = z.boolean(); break;
-             case 'object': zodType = z.record(z.any()); break;
-             case 'array': zodType = z.array(z.any()); break;
-             default: zodType = z.any();
-          }
-          bodyShape[key] = bodyDef.required?.includes(key) ? zodType : zodType.optional();
-       }
+      const bodyShape: ZodRawShape = {};
+      for (const [key, val] of Object.entries(bodyDef.properties)) {
+        const type = (val as any).type || 'any';
+        let zodType: z.ZodTypeAny;
+        switch (type) {
+          case 'string':
+            zodType = z.string();
+            break;
+          case 'number':
+            zodType = z.number();
+            break;
+          case 'boolean':
+            zodType = z.boolean();
+            break;
+          case 'object':
+            zodType = z.record(z.any());
+            break;
+          case 'array':
+            zodType = z.array(z.any());
+            break;
+          default:
+            zodType = z.any();
+        }
+        bodyShape[key] = bodyDef.required?.includes(key)
+          ? zodType
+          : zodType.optional();
+      }
 
-       bodyZod = z.object(bodyShape);
-       zodShape['body'] = bodyZod;
+      bodyZod = z.object(bodyShape);
+      zodShape['body'] = bodyZod;
     }
 
     const schema = z.object(zodShape);
@@ -92,39 +116,38 @@ export default class EventSource extends GSEventSource {
 
     if (eventType === 'tool') {
       server.tool(
-       eventKey,
-       `Generated tool for ${eventKey}`,
-       schema.shape,
-       async (args: PlainObject) => {
-            const cloudEvent = new GSCloudEvent(
+        eventKey,
+        `Generated tool for ${eventKey}`,
+        schema.shape,
+        async (args: PlainObject) => {
+          const cloudEvent = new GSCloudEvent(
             `tool.${eventKey}`,
-             eventKey,
-              new Date(),
-              'mcp',
-              '1.0',
-              { body: args },
-               'REST',
-                new GSActor('user'),
-               '',
-           );
+            eventKey,
+            new Date(),
+            'mcp',
+            '1.0',
+            { body: args },
+            'REST',
+            new GSActor('user'),
+            '',
+          );
 
-            const res = await processEvent(cloudEvent, eventConfig);
+          const res = await processEvent(cloudEvent, eventConfig);
 
-                return {
-                      content: [
-                        {
-                          type: 'text',
-                          text: res?.data?.context || res?.message || "" ,
-                           },
-                           {
-                          type: 'text',
-                          text: res?.data?.source_files || "",
-                           }
-                      ],
-                };
-          },
-        );
-
+          return {
+            content: [
+              {
+                type: 'text',
+                text: res?.data?.context || res?.message || '',
+              },
+              {
+                type: 'text',
+                text: res?.data?.source_files || '',
+              },
+            ],
+          };
+        },
+      );
     } else if (eventType === 'resource') {
       server.resource(
         eventKey,

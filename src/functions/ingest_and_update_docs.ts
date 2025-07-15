@@ -9,20 +9,31 @@ interface LASTSYNCTIME {
   timestamp: number;
 }
 
-const LAST_SYNC_FILE = path.resolve(__dirname, '../../data/last_sync_time.json');
+const LAST_SYNC_FILE = path.resolve(
+  __dirname,
+  '../../data/last_sync_time.json',
+);
 
-async function getLastSyncTime(repo_url: string, branch: string): Promise<number | null> {
+async function getLastSyncTime(
+  repo_url: string,
+  branch: string,
+): Promise<number | null> {
   try {
     const content = await fs.readFile(LAST_SYNC_FILE, 'utf-8');
     const data = JSON.parse(content) as LASTSYNCTIME[];
-    const record = data.find((e) => e.githuburl === repo_url && e.branch === branch);
+    const record = data.find(
+      (e) => e.githuburl === repo_url && e.branch === branch,
+    );
     return record ? record.timestamp : null;
   } catch {
     return null;
   }
 }
 
-async function updateLastSyncTime(repo_url: string, branch: string): Promise<void> {
+async function updateLastSyncTime(
+  repo_url: string,
+  branch: string,
+): Promise<void> {
   let data: LASTSYNCTIME[] = [];
   try {
     const content = await fs.readFile(LAST_SYNC_FILE, 'utf-8');
@@ -32,7 +43,9 @@ async function updateLastSyncTime(repo_url: string, branch: string): Promise<voi
   }
 
   const now = Date.now();
-  const index = data.findIndex((e) => e.githuburl === repo_url && e.branch === branch);
+  const index = data.findIndex(
+    (e) => e.githuburl === repo_url && e.branch === branch,
+  );
   if (index !== -1) {
     data[index].timestamp = now;
   } else {
@@ -43,7 +56,7 @@ async function updateLastSyncTime(repo_url: string, branch: string): Promise<voi
 }
 
 export default async function (ctx: GSContext): Promise<GSStatus> {
-  const repos = await loadRepoUrl(); 
+  const repos = await loadRepoUrl();
 
   if (!Array.isArray(repos) || repos.length === 0) {
     return new GSStatus(true, 200, undefined, 'No repositories to sync.');
@@ -54,7 +67,7 @@ export default async function (ctx: GSContext): Promise<GSStatus> {
     const branch = element?.branch || 'main';
 
     if (!repoUrl) {
-      ctx.logger.warn("Skipping: repo URL missing.");
+      ctx.logger.warn('Skipping: repo URL missing.');
       continue;
     }
 
@@ -62,7 +75,9 @@ export default async function (ctx: GSContext): Promise<GSStatus> {
     const last = await getLastSyncTime(repoUrl, branch);
 
     if (last !== null && now - last < 24 * 60 * 60 * 1000) {
-      ctx.logger.info(`[${repoUrl}@${branch}] Skipping sync: synced within last 24 hours.`);
+      ctx.logger.info(
+        `[${repoUrl}@${branch}] Skipping sync: synced within last 24 hours.`,
+      );
       continue;
     }
 

@@ -1,16 +1,16 @@
-import { GSContext, logger } from "@godspeedsystems/core";
+import { GSContext, logger } from '@godspeedsystems/core';
 
 /**
- * Here you can customize the response when a request 
+ * Here you can customize the response when a request
  * or response validation error happens. Error is in AJV error format.
- * @param ctx  
+ * @param ctx
  */
 export default function (ctx: GSContext) {
-    // logger.error(ctx.inputs.data.validation_error);
-    const {validation_error, event, message} = ctx.inputs.data;
-    return {
-        success: false,
-        data: {validation_error, event, message},
-        code: 500
-    }
+  // logger.error(ctx.inputs.data.validation_error);
+  const { validation_error, event, message } = ctx.inputs.data;
+  return {
+    success: false,
+    data: { validation_error, event, message },
+    code: 500,
+  };
 }

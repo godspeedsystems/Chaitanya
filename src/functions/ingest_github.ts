@@ -1,6 +1,6 @@
 import { GSContext, GSStatus, logger } from '@godspeedsystems/core';
 import path from 'path';
-import * as fs from 'fs/promises'; 
+import * as fs from 'fs/promises';
 import { ingestChangedFiles } from '../helper/ingestGithubRepo';
 
 interface GITHUBOBJECT {
@@ -23,9 +23,11 @@ async function saveRepoUrl(gitobj: GITHUBOBJECT): Promise<void> {
       }
     }
 
-    const index = parsed.findIndex(p => p.githuburl === gitobj.githuburl && p.branch === gitobj.branch);
+    const index = parsed.findIndex(
+      (p) => p.githuburl === gitobj.githuburl && p.branch === gitobj.branch,
+    );
     if (index !== -1) {
-      parsed[index] = gitobj; 
+      parsed[index] = gitobj;
     } else {
       parsed.push(gitobj);
     }
@@ -42,18 +44,24 @@ export default async function (ctx: GSContext): Promise<GSStatus> {
   const branch = ctx.inputs.data.body.branch;
 
   if (!githuburl || !branch) {
-    return new GSStatus(false, 400, undefined ,{message : 'github_url and branch are required'});
+    return new GSStatus(false, 400, undefined, {
+      message: 'github_url and branch are required',
+    });
   }
 
   await saveRepoUrl({ githuburl, branch });
 
-   try {
+  try {
     // Step 2: Trigger ingestion from GitHub immediately
     await ingestChangedFiles(githuburl, branch);
   } catch (e) {
     logger.error(`[ERROR] Failed to ingest repo content:`, e);
-    return new GSStatus(false, 500, undefined,{message : `Failed to ingest GitHub repo: ${(e as Error).message}`});
+    return new GSStatus(false, 500, undefined, {
+      message: `Failed to ingest GitHub repo: ${(e as Error).message}`,
+    });
   }
 
-  return new GSStatus(true, 200,undefined ,{message : 'GitHub repo info saved'});
+  return new GSStatus(true, 200, undefined, {
+    message: 'GitHub repo info saved',
+  });
 }

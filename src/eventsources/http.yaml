@@ -3,6 +3,6 @@ port: 3000
 docs:
   endpoint: /api-docs
 cors:
-  origin: "*"
+  origin: "http://localhost:8080"
 fileUpload:
   multiples: true

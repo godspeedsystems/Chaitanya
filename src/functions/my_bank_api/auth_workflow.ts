@@ -1,5 +1,5 @@
 /**
- * This module should export a function which returns authorisation headers to be set in API calls 
+ * This module should export a function which returns authorisation headers to be set in API calls
  * Here is a commented sample axios call to the third party API for retrieving auth tokens
  */
 
@@ -35,11 +35,11 @@
 //   }
 // };
 module.exports = function (dsConfig: any, ctx: any) {
-    // Note: dsCOnfig is type PlainObject and ctx is type GSContext
-    // When creating proper function you will import them from @godspeedsystems/core
-    // Check the commented code above
-    return {
-        'X-AUTH-TOKEN': 'response_from_auth_endpoint',
-        'X-AUTH-KEY': 'response_from_auth_endpoint'
-    }
-}
+  // Note: dsCOnfig is type PlainObject and ctx is type GSContext
+  // When creating proper function you will import them from @godspeedsystems/core
+  // Check the commented code above
+  return {
+    'X-AUTH-TOKEN': 'response_from_auth_endpoint',
+    'X-AUTH-KEY': 'response_from_auth_endpoint',
+  };
+};
