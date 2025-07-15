@@ -128,8 +128,8 @@ The service can ingest documents from two sources:
 
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/hardik4tiwari/RAG.git
-    cd RAG
+    git clone https://github.com/godspeedsystems/Chaitanya.git
+    cd Chaitanya
     ```
 2.  Install the dependencies:
     ```bash
