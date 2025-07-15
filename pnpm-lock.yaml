@@ -10,16 +10,16 @@ importers:
     dependencies:
       '@godspeedsystems/core':
         specifier: ^2.5.4
-        version: 2.5.4(debug@4.4.1)(express@4.21.2)
+        version: 2.5.4(debug@4.4.1)(express@5.1.0)
       '@godspeedsystems/godspeed':
         specifier: ^2.9.11
-        version: 2.9.11(debug@4.4.1)(express@4.21.2)
+        version: 2.9.11(debug@4.4.1)(express@5.1.0)
       '@godspeedsystems/plugins-axios-as-datasource':
         specifier: ^1.0.6
-        version: 1.0.6(debug@4.4.1)(express@4.21.2)
+        version: 1.0.6(debug@4.4.1)(express@5.1.0)
       '@godspeedsystems/plugins-cron-as-eventsource':
         specifier: ^1.0.0
-        version: 1.0.0(debug@4.4.1)(express@4.21.2)
+        version: 1.0.0(debug@4.4.1)(express@5.1.0)
       '@godspeedsystems/plugins-express-as-http':
         specifier: ^1.0.25
         version: 1.0.25(debug@4.4.1)(prom-client@12.0.0)
@@ -119,6 +119,9 @@ importers:
       prisma:
         specifier: ^6.8.2
         version: 6.8.2(typescript@5.8.3)
+      redis:
+        specifier: ^5.5.6
+        version: 5.6.0
       run-script-os:
         specifier: ^1.1.6
         version: 1.1.6
@@ -418,6 +421,34 @@ packages:
 
   '@prisma/get-platform@6.8.2':
     resolution: {integrity: sha512-vXSxyUgX3vm1Q70QwzwkjeYfRryIvKno1SXbIqwSptKwqKzskINnDUcx85oX+ys6ooN2ATGSD0xN2UTfg6Zcow==}
+
+  '@redis/bloom@5.6.0':
+    resolution: {integrity: sha512-l13/d6BaZDJzogzZJEphIeZ8J0hpQpjkMiozomTm6nJiMNYkoPsNOBOOQua4QsG0fFjyPmLMDJFPAp5FBQtTXg==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@redis/client': ^5.6.0
+
+  '@redis/client@5.6.0':
+    resolution: {integrity: sha512-wmP9kCFElCSr4MM4+1E4VckDuN4wLtiXSM/J0rKVQppajxQhowci89RGZr2OdLualowb8SRJ/R6OjsXrn9ZNFA==}
+    engines: {node: '>= 18'}
+
+  '@redis/json@5.6.0':
+    resolution: {integrity: sha512-YQN9ZqaSDpdLfJqwzcF4WeuJMGru/h4WsV7GeeNtXsSeyQjHTyDxrd48xXfRRJGv7HitA7zGnzdHplNeKOgrZA==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@redis/client': ^5.6.0
+
+  '@redis/search@5.6.0':
+    resolution: {integrity: sha512-sLgQl92EyMVNHtri5K8Q0j2xt9c0cO9HYurXz667Un4xeUYR+B/Dw5lLG35yqO7VvVxb9amHJo9sAWumkKZYwA==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@redis/client': ^5.6.0
+
+  '@redis/time-series@5.6.0':
+    resolution: {integrity: sha512-tXABmN1vu4aTNL3WI4Iolpvx/5jgil2Bs31ozvKblT+jkUoRkk8ykmYo9Pv/Mp7Gk6/Qkr/2rMgVminrt/4BBQ==}
+    engines: {node: '>= 18'}
+    peerDependencies:
+      '@redis/client': ^5.6.0
 
   '@scarf/scarf@1.4.0':
     resolution: {integrity: sha512-xxeapPiUXdZAE3che6f3xogoJPeZgig6omHEy1rIY5WVsB3H2BHNnZH+gHG6x91SCWyQCzWGsuL2Hh3ClO5/qQ==}
@@ -922,6 +953,10 @@ packages:
   clone@1.0.4:
     resolution: {integrity: sha512-JQHZ2QMW6l3aH/j6xCqQThY/9OH4D/9ls34cgkUBiEeocRTU04tHfKPBsUK1PqZCUQM7GiA0IIXJSuXHI64Kbg==}
     engines: {node: '>=0.8'}
+
+  cluster-key-slot@1.1.2:
+    resolution: {integrity: sha512-RMr0FhtfXemyinomL4hrWcYJxmX6deFdCxpJzhDttxgO1+bcCnkk+9drydLVDmAMG7NE6aN/fl4F7ucU/90gAA==}
+    engines: {node: '>=0.10.0'}
 
   coffeescript@2.7.0:
     resolution: {integrity: sha512-hzWp6TUE2d/jCcN67LrW1eh5b/rSDKQK6oD6VMLlggYVUUFexgTH9z3dNYihzX4RMhze5FTUsUmOXViJKFQR/A==}
@@ -2531,6 +2566,10 @@ packages:
     resolution: {integrity: sha512-HFM8rkZ+i3zrV+4LQjwQ0W+ez98pApMGM3HUrN04j3CqzPOzl9nmP15Y8YXNm8QHGv/eacOVEjqhmWpkRV0NAw==}
     engines: {node: '>= 0.10'}
 
+  redis@5.6.0:
+    resolution: {integrity: sha512-0x3pM3SlYA5azdNwO8qgfMBzoOqSqr9M+sd1hojbcn0ZDM5zsmKeMM+zpTp6LIY+mbQomIc/RTTQKuBzr8QKzQ==}
+    engines: {node: '>= 18'}
+
   regenerator-runtime@0.13.11:
     resolution: {integrity: sha512-kY1AZVr2Ra+t+piVaJ4gxaFaReZVH40AKNo7UCX6W+dEwBo/2oZJzqfuN1qLq1oL45o56cPaTXELwrTh8Fpggg==}
 
@@ -3217,6 +3256,34 @@ snapshots:
       - express
       - supports-color
 
+  '@godspeedsystems/core@2.5.4(debug@4.4.1)(express@5.1.0)':
+    dependencies:
+      '@godspeedsystems/metrics': 0.0.3
+      '@opentelemetry/api': 1.9.0
+      ajv: 8.17.1
+      ajv-errors: 3.0.0(ajv@8.17.1)
+      ajv-formats: 2.1.1(ajv@8.17.1)
+      body-parser: 1.20.3
+      coffeescript: 2.7.0
+      config: 3.3.12
+      dotenv: 16.5.0
+      glob: 8.1.0
+      js-yaml: 4.1.0
+      lodash: 4.17.21
+      nodemon: 3.1.10
+      parse-duration: 1.1.2
+      pino: 8.21.0
+      pino-debug: 2.0.0(debug@4.4.1)
+      pino-http: 8.6.1
+      shx: 0.4.0
+      sonic-boom: 3.8.1
+      swagger-ui-express: 4.6.3(express@5.1.0)
+      yaml: 2.8.0
+    transitivePeerDependencies:
+      - debug
+      - express
+      - supports-color
+
   '@godspeedsystems/express-prometheus-middleware@0.0.1(express@4.21.2)(prom-client@12.0.0)':
     dependencies:
       express: 4.21.2
@@ -3224,10 +3291,10 @@ snapshots:
       response-time: 2.3.3
       url-value-parser: 2.2.0
 
-  '@godspeedsystems/godspeed@2.9.11(debug@4.4.1)(express@4.21.2)':
+  '@godspeedsystems/godspeed@2.9.11(debug@4.4.1)(express@5.1.0)':
     dependencies:
       '@adobe/inquirer-table-checkbox': 1.2.0
-      '@godspeedsystems/core': 2.5.4(debug@4.4.1)(express@4.21.2)
+      '@godspeedsystems/core': 2.5.4(debug@4.4.1)(express@5.1.0)
       axios: 0.27.2(debug@4.4.1)
       chai: 4.5.0
       chalk: 4.1.2
@@ -3262,9 +3329,9 @@ snapshots:
     dependencies:
       prom-client: 12.0.0
 
-  '@godspeedsystems/plugins-axios-as-datasource@1.0.6(debug@4.4.1)(express@4.21.2)':
+  '@godspeedsystems/plugins-axios-as-datasource@1.0.6(debug@4.4.1)(express@5.1.0)':
     dependencies:
-      '@godspeedsystems/core': 2.5.4(debug@4.4.1)(express@4.21.2)
+      '@godspeedsystems/core': 2.5.4(debug@4.4.1)(express@5.1.0)
       axios: 1.9.0(debug@4.4.1)
       axios-retry: 3.9.1
       pino-pretty: 10.3.1
@@ -3273,9 +3340,9 @@ snapshots:
       - express
       - supports-color
 
-  '@godspeedsystems/plugins-cron-as-eventsource@1.0.0(debug@4.4.1)(express@4.21.2)':
+  '@godspeedsystems/plugins-cron-as-eventsource@1.0.0(debug@4.4.1)(express@5.1.0)':
     dependencies:
-      '@godspeedsystems/core': 2.5.4(debug@4.4.1)(express@4.21.2)
+      '@godspeedsystems/core': 2.5.4(debug@4.4.1)(express@5.1.0)
       node-cron: 3.0.3
     transitivePeerDependencies:
       - debug
@@ -3528,6 +3595,26 @@ snapshots:
   '@prisma/get-platform@6.8.2':
     dependencies:
       '@prisma/debug': 6.8.2
+
+  '@redis/bloom@5.6.0(@redis/client@5.6.0)':
+    dependencies:
+      '@redis/client': 5.6.0
+
+  '@redis/client@5.6.0':
+    dependencies:
+      cluster-key-slot: 1.1.2
+
+  '@redis/json@5.6.0(@redis/client@5.6.0)':
+    dependencies:
+      '@redis/client': 5.6.0
+
+  '@redis/search@5.6.0(@redis/client@5.6.0)':
+    dependencies:
+      '@redis/client': 5.6.0
+
+  '@redis/time-series@5.6.0(@redis/client@5.6.0)':
+    dependencies:
+      '@redis/client': 5.6.0
 
   '@scarf/scarf@1.4.0': {}
 
@@ -4074,6 +4161,8 @@ snapshots:
       wrap-ansi: 7.0.0
 
   clone@1.0.4: {}
+
+  cluster-key-slot@1.1.2: {}
 
   coffeescript@2.7.0: {}
 
@@ -5720,6 +5809,14 @@ snapshots:
     dependencies:
       resolve: 1.22.10
 
+  redis@5.6.0:
+    dependencies:
+      '@redis/bloom': 5.6.0(@redis/client@5.6.0)
+      '@redis/client': 5.6.0
+      '@redis/json': 5.6.0(@redis/client@5.6.0)
+      '@redis/search': 5.6.0(@redis/client@5.6.0)
+      '@redis/time-series': 5.6.0(@redis/client@5.6.0)
+
   regenerator-runtime@0.13.11: {}
 
   replace-in-file@6.3.5:
@@ -6090,6 +6187,11 @@ snapshots:
   swagger-ui-express@4.6.3(express@4.21.2):
     dependencies:
       express: 4.21.2
+      swagger-ui-dist: 5.22.0
+
+  swagger-ui-express@4.6.3(express@5.1.0):
+    dependencies:
+      express: 5.1.0
       swagger-ui-dist: 5.22.0
 
   tar-fs@2.1.3:

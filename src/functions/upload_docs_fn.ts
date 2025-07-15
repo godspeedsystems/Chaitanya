@@ -56,18 +56,22 @@ export default async function (ctx: GSContext): Promise<GSStatus> {
   const { files } = ctx.inputs.data.files;
   const { metadata } = ctx.inputs.data.body;
 
-  const fileArray = Array.isArray(files) ? files : [files];
-  const metadataArray = (Array.isArray(metadata) ? metadata : (metadata ? [metadata] : [])).map(m => {
-    if (typeof m === 'string') {
-      try {
-        return JSON.parse(m);
-      } catch (e) {
-        logger.error('Failed to parse metadata item:', m, e);
-        return {}; // Return empty object if parsing fails
-      }
+  console.log('Received metadata:', metadata);
+
+  let parsedMetadata;
+  if (typeof metadata === 'string') {
+    try {
+      parsedMetadata = JSON.parse(metadata);
+    } catch (e) {
+      logger.error('Failed to parse metadata JSON string:', metadata, e);
+      return new GSStatus(false, 400, undefined, { error: "Invalid metadata format. Expected a JSON string representing an array of objects." });
     }
-    return m || {};
-  });
+  } else {
+    parsedMetadata = metadata;
+  }
+
+  const fileArray = Array.isArray(files) ? files : [files];
+  const metadataArray = Array.isArray(parsedMetadata) ? parsedMetadata : (parsedMetadata ? [parsedMetadata] : []);
 
 
   try {

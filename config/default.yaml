@@ -10,4 +10,3 @@ log:
     pid: true
     hostname: true 
 
-SUPPRESS_NO_CONFIG_WARNING: 1
