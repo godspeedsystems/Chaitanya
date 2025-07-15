@@ -80,7 +80,7 @@ The business logic is implemented as functions that are triggered by events. Key
 
 - `handle_query`: The main function for handling user queries.
 - `ingest_github`: Ingests a GitHub repository into the vector store.
-- `upload_docs_fn`: Ingests uploaded files into the vector store.
+- `upload_docs_fn`: Handles asynchronous ingestion of uploaded files (PDF, DOCX, etc.) and their associated metadata into the vector store.
 - `stream_gemini`: Handles streaming responses over WebSockets.
 
 #### RAG Pipeline
@@ -105,8 +105,8 @@ The vector store maintains an index of document embeddings and metadata, which i
 
 The service can ingest documents from two sources:
 
-- **GitHub Repositories:** The `src/helper/ingestGithubRepo.ts` module contains logic for cloning a GitHub repository, extracting text from supported file types, and ingesting it into the vector store.
-- **File Uploads:** The service can also ingest documents uploaded directly by the user. It supports various file formats, including PDF, DOCX, TXT, and MD.
+- **GitHub Repositories:** The `src/helper/ingestGithubRepo.ts` module contains logic for cloning a **public** GitHub repository, extracting text from supported file types, and ingesting it into the vector store.
+- **File Uploads:** The service can ingest single or multiple documents (PDF, DOCX, TXT, MD) uploaded directly by the user via a `multipart/form-data` request. Crucially, it also allows for passing a JSON array of metadata, associating custom data with each uploaded file.
 
 ## Features
 
@@ -198,7 +198,7 @@ RAG-Node provides a simple yet powerful REST API to manage your knowledge base a
 
 ### 1. Ingest a GitHub Repository
 
-This endpoint allows you to ingest an entire public GitHub repository. The service will clone the repository, extract text from supported files, and add it to the vector store. This is ideal for building a Q&A system on top of your codebase documentation.
+This endpoint allows you to ingest an entire public GitHub repository. The service will clone the repository, extract text from supported files, and add it to the vector store. This is ideal for building a Q&A system on top of your codebase documentation. **Note:** Currently, only public repositories are supported.
 
 - **Endpoint:** `POST /upload_github_url`
 - **Description:** Kicks off the asynchronous process of ingesting a GitHub repository.
@@ -223,21 +223,25 @@ This endpoint allows you to ingest an entire public GitHub repository. The servi
   }'
   ```
 
-### 2. Upload and Ingest Local Documents
+### 2. Upload and Ingest Local Documents with Metadata
 
-Upload your own documents (PDF, DOCX, TXT, MD) to build a knowledge base from local files. This is perfect for private documentation, reports, and other text-based files.
+Upload your own documents (PDF, DOCX, TXT, MD) along with custom metadata to build a rich, queryable knowledge base. The ingestion process is asynchronous to handle large files efficiently. You can upload multiple files in a single request.
 
 - **Endpoint:** `POST /upload_docs`
-- **Description:** Upload a file for ingestion. This endpoint accepts `multipart/form-data`.
-- **Request:** The request must be a multipart form data request with a `file` field containing the document.
+- **Description:** Uploads one or more files for ingestion, with an option to include a JSON string of metadata for each file. This endpoint accepts `multipart/form-data`.
+- **Request:** The request must be a `multipart/form-data` request with:
+  - One or more `files` fields, each containing a document.
+  - An optional `metadata` field containing a JSON string. This string should be an array of objects, with each object corresponding to a file in the same order.
 - **Use Cases:**
-  - Build a Q&A system for your company's internal policies and procedures.
-  - Create a customer support bot that uses your product manuals as a knowledge source.
-  - Analyze and query large text-based reports.
+  - Build a Q&A system for your company's internal policies, tagging documents by department or author.
+  - Create a customer support bot that uses product manuals, with metadata indicating product versions or feature sets.
+  - Analyze and query large reports, storing key information like publication dates or authors as metadata.
 - **Example:**
   ```bash
   curl -X POST http://localhost:3000/upload_docs \
-  -F "file=@/path/to/your/document.pdf"
+  -F "files=@/path/to/your/document1.pdf" \
+  -F "files=@/path/to/your/document2.docx" \
+  -F 'metadata=[{"source": "HR Manual", "version": "2.1"}, {"source": "Onboarding Guide"}]'
   ```
 
 ### 3. Ask a Question (Handle Query)
