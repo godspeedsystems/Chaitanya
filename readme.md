@@ -143,8 +143,6 @@ The service can ingest documents from two sources:
 
     ```
     GOOGLE_API_KEY=<Your Google AI API Key>
-    OPENAI_API_KEY=<Your OpenAI API Key>
-    GITHUB_TOKEN=<Your GitHub Personal Access Token>
     ```
 
 ### Running the Service
