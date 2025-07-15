@@ -157,6 +157,43 @@ godspeed serve
 
 This will start the Godspeed server and watch for file changes.
 
+## Web Client: A Feature-Rich Chat Interface
+
+Included in this repository is a sophisticated, ready-to-use web client to interact with the RAG-Node service. It provides a clean, modern chat interface packed with features for a seamless user experience.
+
+### Web Client Features
+
+- **Real-time Chat Interface**: A clean and intuitive chat interface for seamless communication.
+- **WebSocket Integration**: Leverages WebSockets for instant, bidirectional communication, enabling real-time message streaming from the LLM.
+- **File Uploads**: Users can upload documents directly into the chat. The application processes these files and integrates them into the conversation context.
+- **GitHub Repository Integration**: Link public GitHub repositories, allowing the AI to access and process code from the specified branch.
+- **Streaming AI Responses**: AI-generated responses are streamed word-by-word for a dynamic and engaging user experience.
+- **Message Management**: Stop, edit, and resubmit messages to refine AI responses.
+- **Delete Uploaded Content**: Easily manage your knowledge base by deleting uploaded files or linked repositories.
+
+### Tech Stack
+
+- **Frontend**: React, TypeScript, Vite
+- **UI Components**: Shadcn UI, Tailwind CSS
+- **API Communication**: Axios and native WebSockets
+
+### Running the Web Client
+
+1.  **Navigate to the web client directory:**
+    ```bash
+    cd web_client
+    ```
+
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+
+3.  **Run the development server:**
+    ```bash
+    npm run dev
+    ```
+    The application will be available at `http://localhost:5173`.
 ## API Reference
 
 RAG-Node provides a simple yet powerful REST API to manage your knowledge base and interact with the RAG pipeline.
