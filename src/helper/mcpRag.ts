@@ -2,7 +2,7 @@ import { VectorStore } from './vectorStore';
 import { logger } from '@godspeedsystems/core';
 
 export class RAGPipeline {
-  private vs: VectorStore | null = null;
+  private vs: VectorStore
 
   constructor() {
         this.vs = new VectorStore();
@@ -20,6 +20,7 @@ export class RAGPipeline {
     if (!this.vs) {
       throw new Error('RAGPipeline not initialized. Call create() first.');
     }
+    logger.info(query)
     const docs = await this.vs.search(query, k);
     const unique_docs = Array.from(
       new Set(docs.map((doc) => `${doc.content}`)),
