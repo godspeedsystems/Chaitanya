@@ -21,8 +21,9 @@ export default async function get_upload_metadata(
     uploadedFilesMetadata = JSON.parse(uploadData);
     return new GSStatus(true, 200, 'Success', uploadedFilesMetadata);
   } catch (err) {
-    return new GSStatus(false, 400, 'Upload Metadata file not found', {
-      error: err,
-    });
+    // return new GSStatus(false, 400, 'Upload Metadata file not found', {
+    //   error: err,
+    // });
+    return new GSStatus(true, 200, 'Success', uploadedFilesMetadata);
   }
 }

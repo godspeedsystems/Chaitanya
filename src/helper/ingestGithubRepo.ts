@@ -160,10 +160,12 @@ async function extractTextFromPdf(buffer: Buffer): Promise<string> {
 async function ingestChangedFiles(
   repoUrl: string,
   branch = 'main',
+  repouniqueid: string,
 ): Promise<void> {
   const parts = repoUrl.replace(/\/$/, '').split('/');
   const owner = parts[parts.length - 2];
   const repo = parts[parts.length - 1];
+  const uniqueGithubId = repouniqueid || `${owner}/${repo}`;
   const latestSha = await getLatestCommitSha(owner, repo, branch);
   const state = await loadLastCommit(owner, repo, branch);
   if (state.repo === repo && state.commit === latestSha) {
@@ -191,8 +193,10 @@ async function ingestChangedFiles(
     deletedFiles = [];
   }
   for (const filePath of deletedFiles) {
-    logger.info(`Removing deleted file from vector DB: ${filePath}`);
-    await vs.removeDocument(filePath);
+    const docId = `${uniqueGithubId}/${filePath}`;
+    logger.info(`Removing deleted file from vector DB: ${docId}`);
+    // await vs.removeDocument(filePath);
+    await vs.removeDocument(docId);
   }
   const allowedExts = new Set(['.md', '.txt', '.pdf', '.mdx']);
   for (const filePath of changedFiles) {
@@ -215,9 +219,12 @@ async function ingestChangedFiles(
         content = await contentRes.text();
       }
       if (content.length > 0) {
-        logger.info(`Re-ingesting file: ${filePath}`);
-        await vs.removeDocument(filePath);
-        await vs.upsert(filePath, content);
+        const docId = `${uniqueGithubId}/${filePath}`;
+        logger.info(`Re-ingesting file: ${docId}`);
+        // await vs.removeDocument(filePath);
+        await vs.removeDocument(docId);
+        // await vs.upsert(filePath, content);
+        await vs.upsert(docId, content);
       }
     } catch (e) {
       logger.error(`Error processing file ${filePath}:`, e);

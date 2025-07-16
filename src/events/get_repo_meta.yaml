@@ -11,6 +11,8 @@
             items:
               type: object
               properties:
+                id:
+                  type: string
                 repoUrl:
                   type: string
                 branch: 

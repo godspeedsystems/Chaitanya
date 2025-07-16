@@ -401,7 +401,7 @@ export class VectorStore {
   async removeUploadedDocs(docId: string) {
     // Step 1: Find all metadata keys that belong to this docId (e.g., doc1_page_0, doc1_page_1)
     const keysToDelete = Object.keys(this.metadata).filter(key =>
-        key.startsWith(`${docId}_page_`)
+        key.startsWith(`${docId}`)
     );
 
     if (keysToDelete.length === 0) {

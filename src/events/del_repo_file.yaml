@@ -1,29 +1,26 @@
-"http & mcp.delete./repo/files":
+"http.delete./github_links/:id":
   fn: delete_repo_file
   summary: Delete a file from a specific GitHub repo and metadata
   description: Removes a document from the vector store and deletes its metadata using repo and file path
-  body:
-    type: object
-    required:
-      - repo
-    properties:
-      repo:
+  params:
+    - name: id
+      in: path
+      required: true
+      schema:
         type: string
-        description: GitHub repository identifier
+  # body:
+  #   type: object
+  #   required:
+  #     - repo
+  #   properties:
+  #     repo:
+  #       type: string
+  #       description: GitHub repository identifier
   responses:
     200:
       description: Successfully deleted the file and its metadata
       content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              success:
-                type: boolean
-              code:
-                type: integer
-              message:
-                type: string
+        application/json
     400:
       description: Error deleting the file or metadata
       content:
@@ -31,12 +28,6 @@
           schema:
             type: object
             properties:
-              success:
-                type: boolean
-              code:
-                type: integer
-              message:
-                type: string
               data:
                 type: object
                 properties:

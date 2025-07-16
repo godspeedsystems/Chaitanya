@@ -88,7 +88,7 @@ useEffect(() => {
         const reposResponse = await axios.get(`${API_URL}/meta/repo`);
         if (reposResponse.data) {
           const fetchedLinks: GitHubLink[] = reposResponse.data.map((repo: any) => ({
-            id: `${Date.now()}-${repo.repoUrl}-${repo.branch}`, // Create a unique enough ID
+            id: repo.repouniqueid,
             github_url: repo.repoUrl,
             branch: repo.branch,
           }));

@@ -1,17 +1,22 @@
-import { GSContext, GSStatus, PlainObject } from '@godspeedsystems/core';
+import { GSContext, GSStatus, PlainObject,logger } from '@godspeedsystems/core';
 import { VectorStore } from '../helper/vectorStore';
-// import { removeFileMetadata } from "../helper/ingestGithubRepo";
+import { deleteRepoUrl } from './ingest_github';
 
-const vs = new VectorStore();
 
 export default async function del_repo_files(ctx: GSContext) {
-  const { filePath } = ctx.inputs.data.filePath;
-  const { repo } = ctx.inputs.data.repo;
+  const { id } = ctx.inputs.data.params;
+
+  logger.info('Unique id : ', id);
+
+  const vs = new VectorStore();
+  
   try {
-    await vs.removeDocument(filePath);
-    // await removeFileMetadata(repo,filePath)
-    return new GSStatus(true, 200, `Successfully deleted ${filePath}`);
+    await vs.removeUploadedDocs(id);
+    await deleteRepoUrl(id);
+    return new GSStatus(true, 200, `Successfully deleted file with uniqueId ${id}`);
   } catch (err) {
     return new GSStatus(false, 400, undefined, { error: err });
   }
 }
+
+
