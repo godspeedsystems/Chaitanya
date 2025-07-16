@@ -20,6 +20,7 @@ import {
   DialogTrigger,
   DialogFooter,
 } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const API_URL = 'http://localhost:3000';
 
@@ -119,25 +120,35 @@ const SystemPrompt = () => {
         <SheetTrigger asChild>
           <Button>Set System Prompt</Button>
         </SheetTrigger>
-        <SheetContent className="w-full max-w-[1200px]">
+        <SheetContent className="w-full max-w-[1200px] flex flex-col h-full">
           <SheetHeader>
             <SheetTitle>System Prompts</SheetTitle>
           </SheetHeader>
-          <div className="grid gap-6 py-4">
-            <div>
-              <Label className="text-lg font-semibold">Core System Prompt</Label>
-              <div className="mt-2 p-4 border rounded-md bg-gray-50 h-64 overflow-y-auto">
-                <pre className="whitespace-pre-wrap text-sm">{corePrompt}</pre>
+          <ScrollArea className="flex-1">
+            <div className="grid gap-6 py-4 px-4">
+              <div>
+                <Label className="text-lg font-semibold">
+                  Core System Prompt
+                </Label>
+                <div className="mt-2 p-4 border rounded-md bg-gray-50 min-h-[200px]">
+                  <pre className="whitespace-pre-wrap text-sm">
+                    {corePrompt}
+                  </pre>
+                </div>
+              </div>
+              <div>
+                <Label className="text-lg font-semibold">
+                  Tool Knowledge Prompt
+                </Label>
+                <div className="mt-2 p-4 border rounded-md bg-gray-50 min-h-[200px]">
+                  <pre className="whitespace-pre-wrap text-sm">
+                    {toolKnowledgePrompt}
+                  </pre>
+                </div>
               </div>
             </div>
-            <div>
-              <Label className="text-lg font-semibold">Tool Knowledge Prompt</Label>
-              <div className="mt-2 p-4 border rounded-md bg-gray-50 h-64 overflow-y-auto">
-                <pre className="whitespace-pre-wrap text-sm">{toolKnowledgePrompt}</pre>
-              </div>
-            </div>
-          </div>
-          <SheetFooter>
+          </ScrollArea>
+          <SheetFooter className="mt-auto">
             <SheetClose asChild>
               <Button variant="outline">Close</Button>
             </SheetClose>
