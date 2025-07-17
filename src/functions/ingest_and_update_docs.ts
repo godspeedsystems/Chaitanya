@@ -4,6 +4,7 @@ import * as fs from 'fs/promises';
 import path from 'path';
 
 interface LASTSYNCTIME {
+  repouniqueid: string;
   githuburl: string;
   branch: string;
   timestamp: number;
@@ -15,6 +16,7 @@ const LAST_SYNC_FILE = path.resolve(
 );
 
 async function getLastSyncTime(
+  repouniqueid: string,
   repo_url: string,
   branch: string,
 ): Promise<number | null> {
@@ -22,7 +24,7 @@ async function getLastSyncTime(
     const content = await fs.readFile(LAST_SYNC_FILE, 'utf-8');
     const data = JSON.parse(content) as LASTSYNCTIME[];
     const record = data.find(
-      (e) => e.githuburl === repo_url && e.branch === branch,
+      (e) => e.repouniqueid === repouniqueid && e.githuburl === repo_url && e.branch === branch,
     );
     return record ? record.timestamp : null;
   } catch {
@@ -31,6 +33,7 @@ async function getLastSyncTime(
 }
 
 async function updateLastSyncTime(
+  repouniqueid: string,
   repo_url: string,
   branch: string,
 ): Promise<void> {
@@ -44,12 +47,12 @@ async function updateLastSyncTime(
 
   const now = Date.now();
   const index = data.findIndex(
-    (e) => e.githuburl === repo_url && e.branch === branch,
+    (e) => e.repouniqueid === repouniqueid && e.githuburl === repo_url && e.branch === branch,
   );
   if (index !== -1) {
     data[index].timestamp = now;
   } else {
-    data.push({ githuburl: repo_url, branch, timestamp: now });
+    data.push({ repouniqueid,githuburl: repo_url, branch, timestamp: now });
   }
 
   await fs.writeFile(LAST_SYNC_FILE, JSON.stringify(data, null, 2), 'utf-8');
@@ -63,6 +66,7 @@ export default async function (ctx: GSContext): Promise<GSStatus> {
   }
 
   for (const element of repos) {
+    const repouniqueid = element?.repouniqueid;
     const repoUrl = element?.githuburl || element?.repoUrl; // fallback for field naming
     const branch = element?.branch || 'main';
 
@@ -72,7 +76,7 @@ export default async function (ctx: GSContext): Promise<GSStatus> {
     }
 
     const now = Date.now();
-    const last = await getLastSyncTime(repoUrl, branch);
+    const last = await getLastSyncTime(repouniqueid,repoUrl, branch);
 
     if (last !== null && now - last < 24 * 60 * 60 * 1000) {
       ctx.logger.info(
@@ -83,8 +87,8 @@ export default async function (ctx: GSContext): Promise<GSStatus> {
 
     try {
       ctx.logger.info(`[${repoUrl}@${branch}] Syncing repository...`);
-      await ingestChangedFiles(repoUrl, branch);
-      await updateLastSyncTime(repoUrl, branch);
+      await ingestChangedFiles(repoUrl, branch,repouniqueid);
+      await updateLastSyncTime(repouniqueid,repoUrl, branch);
       ctx.logger.info(`[${repoUrl}@${branch}] Sync complete.`);
     } catch (err) {
       ctx.logger.error(`[${repoUrl}@${branch}] Sync failed:`, err);

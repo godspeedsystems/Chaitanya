@@ -10,7 +10,7 @@ import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { getPrompts } from '../helper/prompts';
 import { memorySaver } from '../helper/memory';
 
-const seenThreads = new Set<string>();
+export const seenThreads = new Set<string>();
 
 export default async function stream_gemini(ctx: GSContext): Promise<GSStatus> {
   const { ws, clientId, payload } = ctx.inputs.data;

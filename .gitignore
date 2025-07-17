@@ -13,3 +13,4 @@ data/last_commit.json
 data/last_sync_time.json
 data/repo_url.json
 data/docData.json
+.env.test

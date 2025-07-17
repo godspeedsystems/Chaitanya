@@ -1,0 +1,47 @@
+{
+  "project": {
+    "name": "RAG",
+    "framework": "godspeed",
+    "testFramework": "jest",
+    "lastActivity": "2025-07-17T14:30:10.000Z"
+  },
+  "testProgress": {
+    "unit": {
+      "not_started": [
+      ],
+      "pending": [],
+      "completed": [
+        "src/functions/delete_doc_file.ts",
+        "src/functions/upload_docs_fn.ts",
+        "src/functions/delete_repo_file.ts",
+        "src/functions/get_doc_meta.ts",
+        "src/functions/get_repo_meta.ts",
+        "src/functions/get_system_prompt.ts",
+        "src/functions/ingest_and_update_docs.ts",
+        "src/functions/ingest_github.ts",
+        "src/functions/set_system_prompt.ts",
+        "src/functions/stream_gemini.ts",
+        "src/functions/mcp_server.ts"
+      ],
+      "need_improvement": []
+    },
+    "functional": {
+      "not_started": [
+        "src/functions/delete_doc_file.ts",
+        "src/functions/delete_repo_file.ts",
+        "src/functions/get_doc_meta.ts",
+        "src/functions/get_repo_meta.ts",
+        "src/functions/get_system_prompt.ts",
+        "src/functions/mcp_server.ts",
+        "src/functions/set_system_prompt.ts",
+        "src/functions/sync_docs_fn.ts",
+        "src/functions/upload_docs_fn.ts",
+        "src/functions/ingest_github.ts",
+        "src/functions/stream_gemini.ts"
+      ],
+      "pending": [],
+      "completed": [],
+      "need_improvement": []
+    }
+  }
+}
