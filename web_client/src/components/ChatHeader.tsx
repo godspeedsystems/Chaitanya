@@ -8,16 +8,22 @@ interface ChatHeaderProps {
   connectionStatus: "connected" | "disconnected" | "connecting";
   uploadedFiles: UploadedFile[];
   githubLinks: GitHubLink[];
+  pendingGithubLinks: GitHubLink[];
+  syncingGithubLinks: string[];
   onDeleteFile: (fileId: string) => void;
   onDeleteGithubLink: (linkId: string) => void;
+  onSyncGithubLink: (linkId: string) => void;
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({
   connectionStatus,
   uploadedFiles,
   githubLinks,
+  pendingGithubLinks,
+  syncingGithubLinks,
   onDeleteFile,
   onDeleteGithubLink,
+  onSyncGithubLink,
 }) => {
   const getStatusColor = () => {
     switch (connectionStatus) {
@@ -70,8 +76,11 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
         <UploadedItemsPanel
           uploadedFiles={uploadedFiles}
           githubLinks={githubLinks}
+          pendingGithubLinks={pendingGithubLinks}
+          syncingGithubLinks={syncingGithubLinks}
           onDeleteFile={onDeleteFile}
           onDeleteGithubLink={onDeleteGithubLink}
+          onSyncGithubLink={onSyncGithubLink}
         />
         <SystemPrompt />
       </div>

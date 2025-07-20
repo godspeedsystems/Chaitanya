@@ -10,6 +10,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
+import { Toaster, toast } from 'sonner';
+import CustomToast from '@/components/ui/CustomToast';
 import ChatHeader from './ChatHeader';
 import MessageList from './MessageList';
 import ChatInput from './ChatInput';
@@ -22,11 +24,14 @@ const WS_URL = `ws://${BACKEND_IP}:8000`;
 const ChatContainer = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<
     'connected' | 'disconnected' | 'connecting'
   >('disconnected');
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [githubLinks, setGithubLinks] = useState<GitHubLink[]>([]);
+  const [pendingGithubLinks, setPendingGithubLinks] = useState<GitHubLink[]>([]);
+  const [syncingGithubLinks, setSyncingGithubLinks] = useState<string[]>([]);
   const [currentStreamingMessageId, setCurrentStreamingMessageId] = useState<
     string | null
   >(null);
@@ -91,6 +96,7 @@ useEffect(() => {
             id: repo.repouniqueid,
             github_url: repo.repoUrl,
             branch: repo.branch,
+            status: 'completed',
           }));
           setGithubLinks(fetchedLinks);
         }
@@ -166,6 +172,28 @@ useEffect(() => {
         console.error('Backend error:', data.payload?.message);
         break;
 
+      case 'ingestion.complete':
+        {
+          const { success, repoUrl, error } = data.payload;
+          setPendingGithubLinks((prev) =>
+            prev.filter((link) => link.github_url !== repoUrl),
+          );
+          if (success) {
+            setGithubLinks((prev) => [
+              ...prev,
+              {
+                id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                github_url: repoUrl,
+                branch: '', // Note: branch info might not be available from this event
+                status: 'completed',
+              },
+            ]);
+            toast.success(`Successfully ingested ${repoUrl}`);
+          } else {
+            toast.error(`Failed to ingest ${repoUrl}: ${error}`);
+          }
+        }
+        break;
       default:
         console.warn('Unknown WebSocket eventtype:', data.eventtype);
     }
@@ -195,6 +223,7 @@ useEffect(() => {
 
   const handleUploadFiles = async (attachments: { file: File; metadata: { [key: string]: string } }[]) => {
     const formData = new FormData();
+    setIsUploading(true);
 
     // Collect all metadata objects into a single array.
     const metadataArray = attachments.map(a => a.metadata);
@@ -225,23 +254,46 @@ useEffect(() => {
         };
       });
       setUploadedFiles((prev) => [...prev, ...uploaded]);
-    } catch (err) {
+      toast.custom((t) => <CustomToast id={t} message={data.message || 'Files uploaded successfully!'} type="success" />, {
+        duration: 10000,
+      });
+    } catch (err: any) {
       console.error('File upload failed:', err);
+      toast.custom((t) => <CustomToast id={t} message={err.response?.data?.message || 'File upload failed.'} type="error" />, {
+        duration: 10000,
+      });
+    } finally {
+      setIsUploading(false);
     }
   };
 
   const handleSubmitGithubUrl = async (url: string, branch: string) => {
+    const tempId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const newLink: GitHubLink = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      id: tempId,
       github_url: url,
       branch,
+      status: 'pending',
     };
-    setGithubLinks((prev) => [...prev, newLink]);
+    setPendingGithubLinks((prev) => [...prev, newLink]);
+    toast.custom((t) => <CustomToast id={t} message={`Starting ingestion for ${url}`} type="info" />, {
+      duration: 10000,
+    });
 
     try {
-      await axios.post(`${API_URL}/upload_github`, newLink);
+      const response = await axios.post(`${API_URL}/upload_github`, {  id: tempId, github_url: url, branch });
+      const { id } = response.data;
+      setPendingGithubLinks((prev) => prev.filter((link) => link.id !== tempId));
+      setGithubLinks((prev) => [...prev, { ...newLink, id, status: 'completed' }]);
+      toast.custom((t) => <CustomToast id={t} message={`Successfully ingested ${url}`} type="success" />, {
+        duration: 10000,
+      });
     } catch (err) {
       console.error('GitHub link upload failed:', err);
+      setPendingGithubLinks((prev) => prev.filter((link) => link.id !== tempId));
+      toast.custom((t) => <CustomToast id={t} message={`Failed to ingest ${url}.`} type="error" />, {
+        duration: 10000,
+      });
     }
   };
 
@@ -307,6 +359,26 @@ useEffect(() => {
     setItemToDelete({ id: linkId, type: 'github' });
   };
 
+  const handleSyncGithubLink = async (linkId: string) => {
+    setSyncingGithubLinks((prev) => [...prev, linkId]);
+    toast.custom((t) => <CustomToast id={t} message="Syncing repository..." type="info" />, {
+      duration: 10000,
+    });
+    try {
+      const response = await axios.post(`${API_URL}/sync/github/${linkId}`);
+      toast.custom((t) => <CustomToast id={t} message={response.data.message || 'Repository synced successfully.'} type="success" />, {
+        duration: 10000,
+      });
+    } catch (err: any) {
+      console.error('GitHub link sync failed:', err);
+      toast.custom((t) => <CustomToast id={t} message={err.response?.data?.message || 'Failed to sync repository.'} type="error" />, {
+        duration: 10000,
+      });
+    } finally {
+      setSyncingGithubLinks((prev) => prev.filter((id) => id !== linkId));
+    }
+  };
+
   const handleConfirmDelete = async () => {
     if (!itemToDelete) return;
 
@@ -316,15 +388,21 @@ useEffect(() => {
       if (type === 'file') {
         const response = await axios.delete(`${API_URL}/doc/${id}`);
         setUploadedFiles((prev) => prev.filter((f) => f.id !== id));
-        alert(response.data.message || 'File deleted successfully.');
+        toast.custom((t) => <CustomToast id={t} message={response.data.message || 'File deleted successfully.'} type="success" />, {
+          duration: 10000,
+        });
       } else if (type === 'github') {
         const response = await axios.delete(`${API_URL}/github_links/${id}`);
         setGithubLinks((prev) => prev.filter((l) => l.id !== id));
-        alert(response.data.message || 'GitHub link deleted successfully.');
+        toast.custom((t) => <CustomToast id={t} message={response.data.message || 'GitHub link deleted successfully.'} type="success" />, {
+          duration: 10000,
+        });
       }
     } catch (err: any) {
       console.error(`${type} deletion failed:`, err);
-      alert(err.response?.data?.message || `Failed to delete ${type}.`);
+      toast.custom((t) => <CustomToast id={t} message={err.response?.data?.message || `Failed to delete ${type}.`} type="error" />, {
+        duration: 10000,
+      });
     } finally {
       setItemToDelete(null);
     }
@@ -336,8 +414,11 @@ useEffect(() => {
         connectionStatus={connectionStatus}
         uploadedFiles={uploadedFiles}
         githubLinks={githubLinks}
+        pendingGithubLinks={pendingGithubLinks}
+        syncingGithubLinks={syncingGithubLinks}
         onDeleteFile={handleDeleteFile}
         onDeleteGithubLink={handleDeleteGithubLink}
+        onSyncGithubLink={handleSyncGithubLink}
       />
       <MessageList messages={messages} isStreaming={isStreaming} />
       <ChatInput
@@ -348,11 +429,13 @@ useEffect(() => {
         onStopAndRewrite={handleStopAndRewrite}
         onUpdatePrompt={handleUpdatePrompt}
         onRewritePrompt={handleRewritePrompt}
-        disabled={connectionStatus !== 'connected'}
+        disabled={connectionStatus !== 'connected' || isUploading}
         isStreaming={isStreaming}
         isRewriteMode={isRewriteMode}
         lastUserMessage={lastUserMessage}
+        isUploading={isUploading}
       />
+      <Toaster richColors />
       <AlertDialog open={!!itemToDelete} onOpenChange={() => setItemToDelete(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -372,4 +455,3 @@ useEffect(() => {
 };
 
 export default ChatContainer;
-

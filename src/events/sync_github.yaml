@@ -1,0 +1,23 @@
+"http.post./sync/github/:id":
+  fn: sync_github_repo
+  summary: Manually trigger a sync for a specific GitHub repository
+  description:
+    This endpoint initiates a sync for a repository identified by its unique ID.
+    The ID is passed as a path parameter.
+  params:
+    - name: id
+      in: path
+      required: true
+      schema:
+        type: string
+  responses:
+    200:
+      description: Successfully deleted the file and its metadata
+      content:
+        application/json
+    400:
+      description: Bad request, repository ID is missing.
+    404:
+      description: Repository with the specified ID was not found.
+    500:
+      description: Internal server error during the sync process.

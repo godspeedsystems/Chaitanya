@@ -34,4 +34,5 @@ export interface GitHubLink {
   id: string;
   github_url: string;
   branch: string;
+  status: 'pending' | 'completed' | 'failed';
 }

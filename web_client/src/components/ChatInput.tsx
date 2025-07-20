@@ -28,6 +28,7 @@ interface ChatInputProps {
   isStreaming?: boolean;
   isRewriteMode?: boolean;
   lastUserMessage?: string;
+  isUploading?: boolean;
 }
 
 const ChatInput: React.FC<ChatInputProps> = ({
@@ -42,6 +43,7 @@ const ChatInput: React.FC<ChatInputProps> = ({
   isStreaming = false,
   isRewriteMode = false,
   lastUserMessage = "",
+  isUploading = false,
 }) => {
   const [message, setMessage] = useState("");
   const [attachments, setAttachments] = useState<{ file: File; metadata: { [key: string]: string } }[]>([]);
@@ -206,12 +208,12 @@ const ChatInput: React.FC<ChatInputProps> = ({
                 </div>
                 <Popover open={isPopoverOpen && activeFileIndex === index} onOpenChange={setIsPopoverOpen}>
                   <PopoverTrigger asChild>
-                    <Button variant="outline" size="sm" className="mt-2" onClick={() => handleOpenPopover(index)}>Manage Metadata</Button>
+                    <Button variant="outline" size="sm" className="mt-2" onClick={() => handleOpenPopover(index)}>Manage Tags</Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-[500px] p-6">
                     <div className="grid gap-4">
                       <div className="space-y-2 text-center">
-                        <h4 className="font-medium leading-none">Metadata</h4>
+                        <h4 className="font-medium leading-none">Tags</h4>
                         <p className="text-sm text-muted-foreground">
                           Add key-value pairs for {attachment.file.name}
                         </p>
@@ -262,8 +264,8 @@ const ChatInput: React.FC<ChatInputProps> = ({
               </div>
             ))}
             {attachments.length > 0 && (
-              <Button onClick={handleUploadClick} className="mt-2">
-                Upload Files
+              <Button onClick={handleUploadClick} className="mt-2" disabled={isUploading}>
+                {isUploading ? 'Uploading...' : 'Upload Files'}
               </Button>
             )}
           </div>

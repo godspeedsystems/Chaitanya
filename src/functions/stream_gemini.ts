@@ -10,8 +10,6 @@ import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { getPrompts } from '../helper/prompts';
 import { memorySaver } from '../helper/memory';
 
-export const seenThreads = new Set<string>();
-
 export default async function stream_gemini(ctx: GSContext): Promise<GSStatus> {
   const { ws, clientId, payload } = ctx.inputs.data;
 
@@ -27,7 +25,12 @@ export default async function stream_gemini(ctx: GSContext): Promise<GSStatus> {
       reducer: (x, y) => x.concat(y),
       default: () => [],
     }),
+    systemPrompt: Annotation<string>({
+      reducer: (x, y) => y ?? x, 
+      default: () => '',
+    }),
   });
+  
   const ragTool = tool(
     async (input) => {
       const rag = new RAGPipeline()
@@ -72,7 +75,12 @@ export default async function stream_gemini(ctx: GSContext): Promise<GSStatus> {
   ): Promise<Partial<typeof GraphState.State>> {
     ctx.logger.info('---CALL AGENT---');
 
-    const { messages } = state;
+    const { messages, systemPrompt } = state;
+
+    // Construct messages with system prompt at the beginning
+    const allMessages: BaseMessage[] = systemPrompt ? 
+      [new SystemMessage(systemPrompt), ...messages] : 
+      messages;
 
     const llm = new ChatGoogleGenerativeAI({
       model: process.env.GEMINI_MODEL || 'gemini-2.0-flash',
@@ -80,7 +88,9 @@ export default async function stream_gemini(ctx: GSContext): Promise<GSStatus> {
       streaming: true,
     }).bindTools([ragTool]);
 
-    const response = await llm.invoke(messages);
+    const response = await llm.invoke(allMessages);
+    
+    // Only return the response message, not the system prompt
     return {
       messages: [response],
     };
@@ -94,29 +104,67 @@ export default async function stream_gemini(ctx: GSContext): Promise<GSStatus> {
   graph.addConditionalEdges('agent', shouldRetrieve);
   graph.addEdge('tools', 'agent');
 
-  const { core_system_prompt, tool_knowledge_prompt } = getPrompts();
-  const systemPromot = Array(core_system_prompt, tool_knowledge_prompt).join(
-    '\n',
-  );
-
   const runnable = graph.compile({
     checkpointer: memorySaver,
   });
 
   const threadId = clientId;
-  const messages: BaseMessage[] = [];
 
-  if (!seenThreads.has(threadId)) {
-    messages.push(new SystemMessage(systemPromot));
-    seenThreads.add(threadId);
+  // Get the latest system prompt
+  const { core_system_prompt, tool_knowledge_prompt } = getPrompts();
+  const newSystemPromptText = `${core_system_prompt}\n${tool_knowledge_prompt}`;
+
+  // Get the current state for the thread
+  const currentState = await runnable.getState({
+    configurable: {
+      thread_id: threadId,
+    },
+  });
+
+  const existingMessages = currentState?.values?.messages ?? [];
+  const existingSystemPrompt = currentState?.values?.systemPrompt ?? '';
+  
+  let messagesForStream: BaseMessage[] = [];
+  let systemPromptForStream: string | undefined;
+
+  // Check if this is a new conversation or if system prompt needs update
+  if (existingMessages.length === 0) {
+    // New conversation
+    ctx.logger.info(`New conversation for thread ${threadId}. Initializing with system prompt.`);
+    messagesForStream = [new HumanMessage(payload.message)];
+    systemPromptForStream = newSystemPromptText;
+  } else {
+    // Existing conversation
+    messagesForStream = [new HumanMessage(payload.message)];
+    
+    // Check if system prompt needs update
+    if (existingSystemPrompt !== newSystemPromptText) {
+      ctx.logger.info(`System prompt for thread ${threadId} has changed. Updating system prompt.`);
+      systemPromptForStream = newSystemPromptText;
+    }
+    // If system prompt hasn't changed, we don't need to update it
   }
-
-  messages.push(new HumanMessage(payload.message));
 
   try {
     let streamStarted = false;
+    
+    // Get the current system prompt (either updated or existing)
+    const currentSystemPrompt = systemPromptForStream ?? existingSystemPrompt;
+    
+    // Always ensure system prompt is set in the stream
+    const streamInput: Partial<typeof GraphState.State> = {
+      messages: messagesForStream,
+    };
+    
+    // Always include system prompt to ensure it's current
+    if (currentSystemPrompt) {
+      streamInput.systemPrompt = currentSystemPrompt;
+    }
+    
+    ctx.logger.info(`Streaming with system prompt: ${currentSystemPrompt ? 'YES' : 'NO'}`);
+    
     await runnable.stream(
-      { messages },
+      streamInput,
       {
         configurable: {
           thread_id: threadId,

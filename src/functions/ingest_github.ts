@@ -9,7 +9,80 @@ interface GITHUBOBJECT {
   branch: string;
 }
 
+interface GITHUBCOMMIT {
+  repouniqueid?: string;
+  owner?: string;
+  repo?: string;
+  branch?: string;
+  commit?: string;
+}
+
+interface LASTSYNCTIME {
+  repouniqueid: string;
+  githuburl: string;
+  branch: string;
+  timestamp: number;
+}
+
 const REPO_URL_FILE = path.resolve(__dirname, '../../data/repo_url.json');
+const COMMIT_FILE = path.resolve(__dirname, '../../data/last_commit.json');
+const LAST_SYNC_FILE = path.resolve(__dirname,'../../data/last_sync_time.json');
+
+export async function deletecommit(id : string): Promise<void> {
+  try {
+    let parsed: GITHUBCOMMIT[] = [];
+
+    try {
+      const data = await fs.readFile(COMMIT_FILE, 'utf-8');
+      parsed = JSON.parse(data);
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+        throw err;
+      }
+    }
+
+    const newcommitList = parsed.filter(
+      (entry) => entry.repouniqueid !== id,
+    );
+
+    if (newcommitList.length === parsed.length) {
+      logger.warn(`No entry found for fileID: ${id}`);
+    }
+
+    await fs.writeFile(COMMIT_FILE, JSON.stringify(newcommitList, null, 2), 'utf-8');
+    logger.info(`[INFO] Repo info deleted with id: ${id}`);
+  } catch (error) {
+    logger.error(`[ERROR] Failed to delete repo URL:`, error);
+  }
+}
+
+export async function deletesync(id : string): Promise<void> {
+  try {
+    let parsed: LASTSYNCTIME[] = [];
+
+    try {
+      const data = await fs.readFile(LAST_SYNC_FILE, 'utf-8');
+      parsed = JSON.parse(data);
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== 'ENOENT') {
+        throw err;
+      }
+    }
+
+    const newsyncList = parsed.filter(
+      (entry) => entry.repouniqueid !== id,
+    );
+
+    if (newsyncList.length === parsed.length) {
+      logger.warn(`No entry found for fileID: ${id}`);
+    }
+
+    await fs.writeFile(LAST_SYNC_FILE, JSON.stringify(newsyncList, null, 2), 'utf-8');
+    logger.info(`[INFO] Repo info deleted with id: ${id}`);
+  } catch (error) {
+    logger.error(`[ERROR] Failed to delete repo URL:`, error);
+  }
+}
 
 export async function deleteRepoUrl(id : string): Promise<void> {
   try {
@@ -86,11 +159,13 @@ export default async function (ctx: GSContext): Promise<GSStatus> {
   } catch (e) {
     logger.error(`[ERROR] Failed to ingest repo content:`, e);
     return new GSStatus(false, 500, undefined, {
+      id: repouniqueid,
       message: `Failed to ingest GitHub repo: ${(e as Error).message}`,
     });
   }
 
   return new GSStatus(true, 200, undefined, {
+    id: repouniqueid,
     message: 'GitHub repo info saved',
   });
 }

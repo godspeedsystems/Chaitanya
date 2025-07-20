@@ -16,6 +16,7 @@ interface GitTreeItem {
 }
 
 interface GITHUBCOMMIT {
+  repouniqueid?: string;
   owner?: string;
   repo?: string;
   branch?: string;
@@ -44,6 +45,7 @@ const COMMIT_FILE = path.resolve(__dirname, '../../data/last_commit.json');
 const REPO_URL_FILE = path.resolve(__dirname, '../../data/repo_url.json');
 
 async function saveLastCommit(
+  repouniqueid: string,
   owner: string,
   repo: string,
   branch: string,
@@ -61,25 +63,25 @@ async function saveLastCommit(
   }
 
   const index = parsed.findIndex(
-    (p) => p.owner === owner && p.repo === repo && p.branch === branch,
+    (p) => p.repouniqueid === repouniqueid && p.owner === owner && p.repo === repo && p.branch === branch,
   );
   if (index !== -1) {
     parsed[index].commit = commitSha;
   } else {
-    parsed.push({ owner, repo, branch, commit: commitSha });
+    parsed.push({ repouniqueid,owner, repo, branch, commit: commitSha });
   }
 
   await fs.writeFile(COMMIT_FILE, JSON.stringify(parsed, null, 2), 'utf-8');
 }
 
-async function loadLastCommit(owner: string, repo: string, branch: string) {
+async function loadLastCommit(repouniqueid: string ,owner: string, repo: string, branch: string) {
   let parsed: GITHUBCOMMIT[] = [];
   try {
     const data = await fs.readFile(COMMIT_FILE, 'utf-8');
     parsed = JSON.parse(data);
     const index = parsed.findIndex(
       (p: GITHUBCOMMIT) =>
-        p.owner === owner && p.repo === repo && p.branch === branch,
+        p.repouniqueid === repouniqueid && p.owner === owner && p.repo === repo && p.branch === branch,
     );
     if (index !== -1) {
       const finobj = parsed[index];
@@ -167,7 +169,7 @@ async function ingestChangedFiles(
   const repo = parts[parts.length - 1];
   const uniqueGithubId = repouniqueid || `${owner}/${repo}`;
   const latestSha = await getLatestCommitSha(owner, repo, branch);
-  const state = await loadLastCommit(owner, repo, branch);
+  const state = await loadLastCommit(repouniqueid,owner, repo, branch);
   if (state.repo === repo && state.commit === latestSha) {
     logger.info('No new commit. Skipping ingestion.');
     return;
@@ -230,7 +232,7 @@ async function ingestChangedFiles(
       logger.error(`Error processing file ${filePath}:`, e);
     }
   }
-  await saveLastCommit(owner, repo, branch, latestSha);
+  await saveLastCommit(repouniqueid,owner, repo, branch, latestSha);
   logger.info('Ingestion complete.');
 }
 

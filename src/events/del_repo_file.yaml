@@ -8,14 +8,6 @@
       required: true
       schema:
         type: string
-  # body:
-  #   type: object
-  #   required:
-  #     - repo
-  #   properties:
-  #     repo:
-  #       type: string
-  #       description: GitHub repository identifier
   responses:
     200:
       description: Successfully deleted the file and its metadata
