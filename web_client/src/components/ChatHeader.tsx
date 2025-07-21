@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import SystemPrompt from "./SystemPrompt";
 import UploadedItemsPanel from "./UploadedItemsPanel";
 import { UploadedFile, GitHubLink } from "../types/chat";
-
+import { ChaitanyaIcon } from "./ChaitanyaIcon";
 interface ChatHeaderProps {
   connectionStatus: "connected" | "disconnected" | "connecting";
   uploadedFiles: UploadedFile[];
@@ -52,27 +52,26 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({
   };
 
   return (
-    <div className="h-14 sm:h-16 border-b border-gray-200 px-3 sm:px-6 flex items-center justify-between bg-gradient-to-r from-blue-50 to-purple-50 sticky top-0 py-4 z-10">
+    <div className="h-14 sm:h-16 border-b border-gray-200 px-3 sm:px-6 flex items-center justify-between bg-gradient-to-r from-blue-50 to-purple-50 sticky top-0 z-10">
       <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
-        <h1 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
-          AI Chat Assistant
-        </h1>
-        <Badge
-          variant="outline"
-          className="flex items-center space-x-1 sm:space-x-2 shrink-0"
-        >
+        <div className="flex items-center gap-2 min-w-0">
+          <ChaitanyaIcon
+            className="w-6 h-6 sm:w-10 sm:h-10 flex-shrink-0"
+          />
+          <h1 className="text-lg sm:text-xl font-semibold text-gray-900 truncate">
+            Chaitanya
+          </h1>
+        </div>
+        <Badge variant="outline" className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
           <div className={`w-2 h-2 rounded-full ${getStatusColor()}`} />
           <span className="text-xs hidden sm:inline">{getStatusText()}</span>
           <span className="text-xs sm:hidden">
-            {connectionStatus === "connected"
-              ? "●"
-              : connectionStatus === "connecting"
-              ? "◐"
-              : "○"}
+            {connectionStatus === "connected" ? "●" :
+              connectionStatus === "connecting" ? "◐" : "○"}
           </span>
         </Badge>
       </div>
-      <div className="flex items-center space-x-2">
+      <div className="flex items-center gap-2">
         <UploadedItemsPanel
           uploadedFiles={uploadedFiles}
           githubLinks={githubLinks}
